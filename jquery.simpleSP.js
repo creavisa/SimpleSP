@@ -203,15 +203,15 @@ $.ssp.createSite = function(desc) {
 	    lang = 1033,
 	    payload = {
 	parameters: {
-		'__metadata':  {
-			'type': 'SP.WebInfoCreationInformation' 
+		__metadata:  {
+			type: "SP.WebInfoCreationInformation" 
 		}, 
-		'Url': desc.path, 
-		'Title': desc.name, 
-		'Description': desc.desc,
-		'Language': lang,
-		'WebTemplate':desc.tpl,
-		'UseUniquePermissions': true	
+		Url: desc.path, 
+		Title: desc.name, 
+		Description: desc.desc,
+		Language: lang,
+		WebTemplate:desc.tpl,
+		UseUniquePermissions: true	
 	}};
 	
 	status = request({
@@ -272,4 +272,3 @@ function request(desc) {
 }
 
 })(jQuery);
-
