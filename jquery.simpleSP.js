@@ -52,7 +52,7 @@ $.ssp.List = function (title, uuid) {
 	if (tmp && tmp.results) {
 		obj.items = tmp.results;
 	} else {
-		obj.itmes = [];
+		obj.items = [];
 	}
 
 	$.extend(this, obj);
@@ -259,6 +259,12 @@ function request(desc) {
 		data: desc.data, 
 		success: function(res) {
 			ret = res.d;
+		},
+		error: function(req, status, error) {
+			ret = {
+				status: status,
+				error: error
+			};
 		}
 	});
 	
