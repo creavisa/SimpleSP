@@ -3,10 +3,6 @@
  * (c) 2013 Creavisa
  */
 
-// Our Library Object.
-// It's exported to the global namespace (usually window).
-var SSP = {};
-
 // Closure to avoid unnecesary globals
 (function ($) {
 
