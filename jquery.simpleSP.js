@@ -21,7 +21,9 @@ $.ssp = function(options) {
 
 $.ssp.Site = function(opts, create) {
 	var info = {},
-		desc = {};
+		desc = {},
+		// English
+		lang = 1033;
 	
 	if (opts.load || create) {
 		info = request({site: opts.url});
@@ -29,12 +31,23 @@ $.ssp.Site = function(opts, create) {
 	} 
 	
 	if (create && info.error) {
-		desc = {};
+		desc = {
+		parameters: {
+			__metadata:  {
+				type: "SP.WebInfoCreationInformation" 
+			}, 
+			Url: opts.Url, 
+			Title: opts.Title, 
+			Description: opts.Description,
+			Language: lang,
+			WebTemplate: opts.Template,
+			UseUniquePermissions: true	
+		}};
 		
 		info = request({
 			path: "/Webs/Add",
 			type: "POST",
-			data: info
+			data: desc
 		});
 		
 	}
@@ -375,31 +388,6 @@ $.ssp.getSubSites = function() {
 	}
 
 	return sites.results;
-}
-
-$.ssp.createSite = function(desc) {
-	var status, 
-	    lang = 1033,
-	    payload = {
-	parameters: {
-		__metadata:  {
-			type: "SP.WebInfoCreationInformation" 
-		}, 
-		Url: desc.path, 
-		Title: desc.name, 
-		Description: desc.desc,
-		Language: lang,
-		WebTemplate:desc.tpl,
-		UseUniquePermissions: true	
-	}};
-	
-	status = request({
-		type: "POST",
-		path: "/Webinfos/Add",
-		data: payload
-		});
-
-	return status;
 }
 
 // Automate somethings about the request and make it 
