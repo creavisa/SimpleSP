@@ -197,7 +197,7 @@ $.ssp.List.prototype.add = function(item) {
 	return status;
 }
 
-$.ssp.List.prototype.del = function(item) {
+$.ssp.List.prototype.rm = function(item) {
 	var status,
 	    list = this;
 
@@ -232,6 +232,23 @@ $.ssp.List.prototype.removeList = function() {
 	return status;
 }
 
+$.ssp.Group = function(opts, create) {
+	
+	return this;	
+}
+
+$.ssp.Group.prototype.add = function(user) {
+	
+}
+
+$.ssp.Group.prototype.rm = function(user) {
+	
+}
+
+$.ssp.Role = function(name) {
+	return this;
+}
+
 $.ssp.getTemplates = function() {
 	var templates,
 	    lang = "1033";
@@ -245,7 +262,6 @@ $.ssp.getTemplates = function() {
 	}
 	
 	return templates.results;
-
 }
 
 $.ssp.getSubSites = function() {
@@ -254,8 +270,12 @@ $.ssp.getSubSites = function() {
 	sites = request({
 		path: "/Webs"
 	});
+	
+	if (sites.error) {
+		return [];
+	}
 
-	return sites;
+	return sites.results;
 }
 
 $.ssp.createSite = function(desc) {
@@ -284,7 +304,7 @@ $.ssp.createSite = function(desc) {
 }
 
 // Automate somethings about the request and make it 
-// sincronous, to avoid race conditions when creating sites
+// synchronous to avoid race conditions when creating sites
 // or lists.
 function request(desc) {
 	var ret,
