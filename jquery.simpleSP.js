@@ -273,14 +273,54 @@ $.ssp.Group = function(opts, create) {
 }
 
 $.ssp.Group.prototype.add = function(user) {
-	
+
 }
 
 $.ssp.Group.prototype.rm = function(user) {
-	
+
 }
 
-$.ssp.Role = function(name) {
+$.ssp.Role = function(opts, create) {
+	
+	var res,
+		role = {}
+		
+		
+	if (typeof opts === "string") {
+		opts = {Name: opts};
+	}
+	
+	if (opts.Name) {
+		path = "/RoleDefinitions/GetByTitle('" + opts.Name +"')";
+	} else if (opts.uuid) {
+		path = "/RoleDefinitions/GetById('" + opts.uuid +"')";
+	} else {
+		return this;
+	}
+	
+	res = request({path: path});
+	
+	if (create && res.error && opts.Name) {
+		role = {
+			__metadata: {
+				type: "SP.RoleDefinition"
+			},
+			Name: opts.Name,
+			Description: opts.Description || "",
+			// Use BasePermissions the SP namespace
+			BasePermissions: opts.BasePermissions || new SP.BasePermissions(), 
+			Order: 1
+		};
+		
+		res = request({
+			type: "POST",
+			path: "/RoleDefinitions",
+			data: role
+		});
+	}
+		
+	$.extend(this, res);
+		
 	return this;
 }
 
