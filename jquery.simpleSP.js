@@ -66,6 +66,7 @@ $.ssp.List.prototype.setTitle = function(title) {
 $.ssp.List.prototype.addColumn = function(col) {
 	var list = this,
 	    colDesc,
+		type,
 	    status;
 
 	if (!list.uuid) {
@@ -98,14 +99,14 @@ $.ssp.List.prototype.addColumn = function(col) {
 		FieldTypeKind: type,
 		// Use 'false' as default to avoid 
 		// sending null or undef
-		Required: required || false,
-		EnforceUniqueValues: unique || false
+		Required: col.required || false,
+		EnforceUniqueValues: col.unique || false
 	};
 		
 	status = request({
 		type: "POST",
-	    	path: "/List('" + list.uuid "')/Fields",
-	    	data: colDesc
+		data: colDesc,
+	    path: "/List('" + list.uuid + "')/Fields"
 		});	
 }
 
@@ -121,10 +122,11 @@ $.ssp.List.prototype.add = function(item) {
 	if (!item.type) {
 		// get default type from list
 		// item.type = list.defaultType;
+		item.type = item.type;
 	}
 
 	desc = {
-		__metadata: {
+		"__metadata": {
 			type: item.type
 		},
 		Title: item.title
@@ -154,6 +156,9 @@ $.ssp.List.prototype.del = function(item) {
 	});
 
 	return status;
+}
+
+$.ssp.List.prototype.grant = function(group, role) {
 }
 
 $.ssp.List.prototype.removeList = function() {
@@ -227,7 +232,7 @@ function request(desc) {
 		path: desc.path || "",
 		site: desc.site || site.baseURL,
 		type: desc.type || "GET",
-		data: dest.data || "",
+		data: desc.data || "",
 		headers: {
 			"Accept": "application/json;odata=verbose",
 			"Content-Type": "application/json;odata=verbose"
@@ -242,8 +247,8 @@ function request(desc) {
 		opts.headers["If-Match"] = "*";
 	}
 
-	if (dest.data && desc.type !== "GET") {
-		dest.data = JSON.stringify(dest.data);
+	if (desc.data && desc.type !== "GET") {
+		desc.data = JSON.stringify(desc.data);
 	}
  
 	$.ajax({
@@ -251,7 +256,7 @@ function request(desc) {
 		url: opts.site + "/_api/Web" + opts.path,
 		headers: opts.headers, 
 		async: false,
-		data: dest.data, 
+		data: desc.data, 
 		success: function(res) {
 			ret = res.d;
 		}
@@ -261,3 +266,4 @@ function request(desc) {
 }
 
 })(jQuery);
+
