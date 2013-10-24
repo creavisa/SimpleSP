@@ -19,12 +19,25 @@ $.ssp = function(options) {
 	return site;
 }
 
-$.ssp.Site = function(opts) {
-	var info;
-	if (this.load) {
+$.ssp.Site = function(opts, create) {
+	var info = {},
+		desc = {};
+	
+	if (opts.load || create) {
 		info = request({site: opts.url});
 		$.extend(this, info);
 	} 
+	
+	if (create && info.error) {
+		desc = {};
+		
+		info = request({
+			path: "/Webs/Add",
+			type: "POST",
+			data: info
+		});
+		
+	}
 
 	this.baseURL = opts.url;
 
@@ -43,7 +56,7 @@ $.ssp.getLists = function() {
 }
 
 // List object definition
-$.ssp.List = function (opts) {
+$.ssp.List = function (opts, create) {
 	var list,
 	    tmp,
 	    desc, //List description
@@ -62,7 +75,7 @@ $.ssp.List = function (opts) {
 	}
 
 	list = request({path: req});
-	if (list.error && opts.title) {
+	if (list.error && create && opts.title) {
 		desc = {
 			__metadata: {
 				type: "SP.List"
