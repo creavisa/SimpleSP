@@ -45,8 +45,8 @@ $.ssp.getLists = function() {
 // List object definition
 $.ssp.List = function (opts) {
 	var list,
-		tmp,
-		desc, //List description
+	    tmp,
+	    desc, //List description
 	    req = '/Lists';
 		
 	if (typeof opts === "string") {
@@ -148,7 +148,7 @@ $.ssp.List.prototype.addColumn = function(col) {
 	status = request({
 		type: "POST",
 		data: colDesc,
-	    path: "/List('" + list.uuid + "')/Fields"
+		path: "/List('" + list.uuid + "')/Fields"
 		});	
 }
 
@@ -227,7 +227,12 @@ $.ssp.getTemplates = function() {
 		path: "/GetAvailableWebTemplates("+ lang +")"
 	});
 
-	return templates;
+	if (templates.error) {
+		return [];
+	}
+	
+	return templates.results;
+
 }
 
 $.ssp.getSubSites = function() {
