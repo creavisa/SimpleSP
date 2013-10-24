@@ -176,8 +176,7 @@ $.ssp.List.prototype.add = function(item) {
 
 	if (!item.type) {
 		// get default type from list
-		// item.type = list.defaultType;
-		item.type = item.type;
+		item.type = list.ListItemEntityTypeFullName;
 	}
 
 	desc = {
