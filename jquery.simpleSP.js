@@ -115,8 +115,22 @@ $.ssp.List = function (opts, create) {
 		return this;
 	}
 	
+	$.extend(this, list);
+	this.updateItems();
+	
+	return this;
+}
+
+$.ssp.List.prototype.updateItems = function() {
+	var tmp,
+	    list = this;
+		
 	//Get list items
-	tmp = request({path: req + "/Items"});
+	tmp = request({
+		path: req + "/Lists('" + list.Id +"')/Items",
+		async: true
+		});
+	
 	if (tmp && tmp.results) {
 		list.Items = tmp.results;
 	} else {
@@ -203,9 +217,11 @@ $.ssp.List.prototype.add = function(item) {
 	// and fill them, if the item has them declared
 	status = request({
 		type: "POST",
-		path:  "/Lists('"+ list.Id +"')/Items"
+		path:  "/Lists('"+ list.Id +"')/Items",
+		data: desc
 	});
 
+	this.updateItems();
 	return status;
 }
 
@@ -222,6 +238,7 @@ $.ssp.List.prototype.rm = function(item) {
 		path: "/List('"+ list.Id +"')/Items('" + item.Id + "')"
 	});
 
+	this.updateItems();
 	return status;
 }
 
@@ -418,6 +435,7 @@ function request(desc) {
 		site: desc.site || site.baseURL,
 		type: desc.type || "GET",
 		data: desc.data || "",
+		async: desc.async || false,
 		headers: {
 			"Accept": "application/json;odata=verbose",
 			"Content-Type": "application/json;odata=verbose"
@@ -440,7 +458,7 @@ function request(desc) {
 		type: opts.type,
 		url: opts.site + "/_api/Web" + opts.path,
 		headers: opts.headers, 
-		async: false,
+		async: desc.async,
 		data: desc.data, 
 		success: function(res) {
 			ret = res.d;
@@ -455,5 +473,7 @@ function request(desc) {
 	
 	return ret;			
 }
+
+$.ssp.req = request;
 
 })(jQuery);
