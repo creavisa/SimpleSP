@@ -308,41 +308,37 @@ $.ssp.Group = function(opts, create) {
 }
 
 $.ssp.Group.prototype.add = function(user) {
-		var desc,
-			res = {};
+	var desc,
+	    res = {};
 		
-		desc ={
-			__metadata: {
-				type: "SP.User"
-			},
-			Email: user.Description,
-			Title: user.DisplayText,
-			LoginName: user.Key	
-		};
-		
-		res = request({
-			type: "POST",
-			path: "/SiteGroups("+ this.Id +")/Users"
-		});
-		
-		return res;
+	desc ={
+		__metadata: {
+			type: "SP.User"
+		},
+		Email: user.Description,
+		Title: user.DisplayText,
+		LoginName: user.Key	
+	};
+
+	res = request({
+		type: "POST",
+		path: "/SiteGroups("+ this.Id +")/Users"
+	});
+	
+	return res;
 }
 
 $.ssp.Group.prototype.rm = function(user) {
-	var res;
-	res = request({
+	return request({
 		type: "DELETE",
 		path: "/SiteGroups("+this.Id+")/Users/GetById("+ user.Id +")",
 		success: log
 		});
-
-	return res;
 }
 
 $.ssp.Role = function(opts, create) {
-	
 	var res,
-		role = {}
+	    role = {}
 		
 		
 	if (typeof opts === "string") {
