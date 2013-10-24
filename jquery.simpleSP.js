@@ -90,8 +90,6 @@ function request(desc) {
 	if (desc.type && desc.type !== "GET") {
 		opts.headers['X-RequestDigest'] = $("#__REQUESTDIGEST").val();
 	}
-
-	
  
 	$.ajax({
 		type: "GET",
