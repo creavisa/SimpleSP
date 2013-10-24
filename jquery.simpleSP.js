@@ -10,19 +10,19 @@ var SSP = {};
 // Closure to avoid unnecesary globals
 (function ($) {
 
-// 'site' is only the URL to be used internally
-var site,
-    siteData = {};
+var  site = {
+	baseURL: ""
+};
 
 $.ssp = function(options) {
-	if (options.site) {
-		site = options.site;
+	if (options.url) {
+		site.baseURL = options.url;
 	} else {
-		site = window.location.host;
+		site.baseURL= window.location.host;
 	}
 
 	if (options.load) {
-		siteData = request();
+		site = request();
 	}
 }
 
@@ -120,7 +120,7 @@ function request(desc) {
 	var ret,
 	    opts = {
 		path: desc.path || "",
-		site: desc.site || site,
+		site: desc.site || site.baseURL,
 		type: desc.type || "GET",
 		data: dest.data || "",
 		headers: {
@@ -143,7 +143,7 @@ function request(desc) {
  
 	$.ajax({
 		type: "GET",
-		url: site + "/_api/web" + opts.path,
+		url: opts.site + "/_api/web" + opts.path,
 		headers: opts.headers, 
 		async: false,
 		data: dest.data, 
