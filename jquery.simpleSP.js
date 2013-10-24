@@ -77,27 +77,27 @@ $.ssp.List = function (opts, create) {
 		
 	if (typeof opts === "string") {
 		opts = {
-			title: opts
+			Title: opts
 		};
 	}
 
-	if (opts.uuid) {
-		req += "('" + optsuuid + "')";
-	} else if (opts.title) {
-		req += "/GetByTitle('" + opts.title +"')";
+	if (opts.Id) {
+		req += "('" + opts.Id + "')";
+	} else if (opts.Title) {
+		req += "/GetByTitle('" + opts.Title +"')";
 	}
 
 	list = request({path: req});
-	if (list.error && create && opts.title) {
+	if (list.error && create && opts.Title) {
 		desc = {
 			__metadata: {
 				type: "SP.List"
 			},
-			Title: opts.title,
-			Description: opts.desc || "",
+			Title: opts.Title,
+			Description: opts.Description || "",
 			AllowContentTypes: true,
 			ContentTypesEnabled: true,
-			BaseTemplate: opts.tpl || 100 
+			BaseTemplate: opts.Template || 100 
 			};
 			
 		list = request({
@@ -116,11 +116,11 @@ $.ssp.List = function (opts, create) {
 	}
 	
 	//Get list items
-	tmp = request({path: req + "/items"});
+	tmp = request({path: req + "/Items"});
 	if (tmp && tmp.results) {
-		list.items = tmp.results;
+		list.Items = tmp.results;
 	} else {
-		list.items = [];
+		list.Items = [];
 	}
 
 	$.extend(this, list);
@@ -137,7 +137,7 @@ $.ssp.List.prototype.addColumn = function(col) {
 		type,
 	    status;
 
-	if (!list.uuid) {
+	if (!list.Id) {
 		return;
 	}
 
@@ -163,18 +163,18 @@ $.ssp.List.prototype.addColumn = function(col) {
 		__metadata: {
 			type: "SP.Field"
 		},
-		Title: name,
+		Title: col.Title,
 		FieldTypeKind: type,
 		// Use 'false' as default to avoid 
 		// sending null or undef
-		Required: col.required || false,
-		EnforceUniqueValues: col.unique || false
+		Required: col.Required || false,
+		EnforceUniqueValues: col.Unique || Col.EnforceUniqueValues || false
 	};
 		
 	status = request({
 		type: "POST",
 		data: colDesc,
-		path: "/List('" + list.uuid + "')/Fields"
+		path: "/List('" + list.Id + "')/Fields"
 		});	
 }
 
@@ -183,7 +183,7 @@ $.ssp.List.prototype.add = function(item) {
 	    desc = {},
 	    status;
 
-	if (!list.uuid || !item.title) {
+	if (!list.Id || !item.Title) {
 		return;
 	}
 
@@ -196,14 +196,14 @@ $.ssp.List.prototype.add = function(item) {
 		"__metadata": {
 			type: item.type
 		},
-		Title: item.title
+		Title: item.Title
 	};
 
 	// Find a way to list the extra columns per item.type
 	// and fill them, if the item has them declared
 	status = request({
 		type: "POST",
-		path:  "/Lists('"+ list.uuid +"')/Items"
+		path:  "/Lists('"+ list.Id +"')/Items"
 	});
 
 	return status;
@@ -213,13 +213,13 @@ $.ssp.List.prototype.rm = function(item) {
 	var status,
 	    list = this;
 
-	if (!item.uuid || !list.uuid) {
+	if (!item.Id || !list.Id) {
 		return;
 	}
 
 	status = request({
 		type: "DELETE",
-		path: "/List('"+ list.uuid +"')/Items('" + item.uuid + "')"
+		path: "/List('"+ list.Id +"')/Items('" + item.Id + "')"
 	});
 
 	return status;
@@ -232,13 +232,13 @@ $.ssp.List.prototype.removeList = function() {
 	var status,
 	    list = this;
 
-	if (!list.uuid) {
+	if (!list.Id) {
 		return;
 	}
 
 	status = request({
 		type: "DELETE",
-		path: "/List('"+ list.uuid +"')"
+		path: "/List('"+ list.Id +"')"
 	});
 
 	return status;
