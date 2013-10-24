@@ -105,7 +105,34 @@ $.ssp.List.prototype.addColumn = function(col) {
 }
 
 $.ssp.List.prototype.add = function(item) {
-	
+	var list = this,
+	    desc = {},
+	    status;
+
+	if (!list.uuid || !item.title) {
+		return;
+	}
+
+	if (!item.type) {
+		// get default type from list
+		// item.type = list.defaultType;
+	}
+
+	desc = {
+		__metadata: {
+			type: item.type
+		},
+		Title: item.title
+	};
+
+	// Find a way to list the extra columns per item.type
+	// and fill them, if the item has them declared
+	status = request({
+		type: "POST",
+		url: site + "/_api/Web/Lists('"+ list.uuid +"')/Items"
+	});
+
+	return status;
 }
 
 // Constructor for List item
