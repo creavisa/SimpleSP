@@ -32,7 +32,14 @@ $.ssp.Site = function(opts) {
 }
 
 $.ssp.getLists = function() {
-	return request({path: '/Lists'});
+	var res;
+	res = request({path: '/Lists'});
+	
+	if (res.error) {
+		return [];
+	}
+	
+	return res.results;
 }
 
 // List object definition
