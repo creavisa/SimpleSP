@@ -11,15 +11,24 @@ var  site = {
 };
 
 $.ssp = function(options) {
-	if (options.url) {
-		site.baseURL = options.url;
-	} else {
-		site.baseURL= window.location.host;
-	}
+	site = new $.ssp.Site({
+		url: options.url || window.location.host,
+		load: options.load || false
+	});
 
-	if (options.load) {
-		site = request();
-	}
+	return site;
+}
+
+$.ssp.Site = function(opts) {
+	var info;
+	if (this.load) {
+		info = request({site: opts.url});
+		$.extend(this, info);
+	} 
+
+	this.baseURL = opts.url;
+
+	return this;
 }
 
 $.ssp.getLists = function() {
@@ -125,15 +134,88 @@ $.ssp.List.prototype.add = function(item) {
 	// and fill them, if the item has them declared
 	status = request({
 		type: "POST",
-		url: site + "/_api/Web/Lists('"+ list.uuid +"')/Items"
+		path:  "/Lists('"+ list.uuid +"')/Items"
 	});
 
 	return status;
 }
 
-// Constructor for List item
-// Sets default columns and the correct list type
-$.ssp.List.prototype.Item = function(contentType) {
+$.ssp.List.prototype.del = function(item) {
+	var status,
+	    list = this;
+
+	if (!item.uuid || !list.uuid) {
+		return;
+	}
+
+	status = request({
+		type: "DELETE",
+		path: "/List('"+ list.uuid +"')/Items('" + item.uuid + "')"
+	});
+
+	return status;
+}
+
+$.ssp.List.prototype.removeList = function() {
+	var status,
+	    list = this;
+
+	if (!list.uuid) {
+		return;
+	}
+
+	status = request({
+		type: "DELETE",
+		path: "/List('"+ list.uuid +"')"
+	});
+
+	return status;
+}
+
+$.ssp.getTemplates = function() {
+	var templates,
+	    lang = "1033";
+	
+	templates = request({
+		path: "/GetAvailableWebTemplates("+ lang +")"
+	});
+
+	return templates;
+}
+
+$.ssp.getSubSites = function() {
+	var sites;
+
+	sites = request({
+		path: "/Webs"
+	});
+
+	return sites;
+}
+
+$.ssp.createSite = function(desc) {
+	var status, 
+	    lang = 1033,
+	    payload = {
+	parameters: {
+		'__metadata':  {
+			'type': 'SP.WebInfoCreationInformation' 
+		}, 
+		'Url': desc.path, 
+		'Title': desc.name, 
+		'Description': desc.desc,
+		'Language': lang,
+		'WebTemplate':desc.tpl,
+		'UseUniquePermissions': true	
+	}};
+	
+	status = request({
+		type: "POST",
+		path: "/Webinfos/Add",
+		data: payload
+		});
+
+	return status;
 }
 
 // Automate somethings about the request and make it 
@@ -166,7 +248,7 @@ function request(desc) {
  
 	$.ajax({
 		type: "GET",
-		url: opts.site + "/_api/web" + opts.path,
+		url: opts.site + "/_api/Web" + opts.path,
 		headers: opts.headers, 
 		async: false,
 		data: dest.data, 
