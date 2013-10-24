@@ -240,19 +240,19 @@ function request(desc) {
 			
 	};
 
-	if (desc.type !== "GET") {
+	if (opts.type !== "GET") {
 		opts.headers["X-RequestDigest"] = $("#__REQUESTDIGEST").val();
 		// This is forcing the write, must fix
 		// Maybe have the eTag with the rest of the data
 		opts.headers["If-Match"] = "*";
 	}
 
-	if (desc.data && desc.type !== "GET") {
+	if (opts.data && opts.type !== "GET") {
 		desc.data = JSON.stringify(desc.data);
 	}
  
 	$.ajax({
-		type: "GET",
+		type: opts.type,
 		url: opts.site + "/_api/Web" + opts.path,
 		headers: opts.headers, 
 		async: false,
