@@ -43,26 +43,61 @@ $.ssp.getLists = function() {
 }
 
 // List object definition
-$.ssp.List = function (title, uuid) {
-	var obj,
+$.ssp.List = function (opts) {
+	var list,
+		tmp,
+		desc, //List description
 	    req = '/Lists';
-
-	if (uuid) {
-		req += "('" + uuid + "')";
-	} else if (title) {
-		req += "/Lists/GetByTitle('" + title +"')";
+		
+	if (typeof opts === "string") {
+		opts = {
+			title: opts
+		};
 	}
 
-	obj = request({path: req});
+	if (opts.uuid) {
+		req += "('" + optsuuid + "')";
+	} else if (opts.title) {
+		req += "/GetByTitle('" + opts.title +"')";
+	}
+
+	list = request({path: req});
+	if (list.error && opts.title) {
+		desc = {
+			__metadata: {
+				type: "SP.List"
+			},
+			Title: opts.title,
+			Description: opts.desc || "",
+			AllowContentTypes: true,
+			ContentTypesEnabled: true,
+			BaseTemplate: opts.tpl || 100 
+			};
+			
+		list = request({
+			type: "POST",
+			path: "/Lists",
+			data: desc
+			});
+	} 
+	
+	// If it doesn't have a title of the error
+	// persists:
+	if (list.error) {
+		// Returns a List object with an error
+		$.extend(this, list);
+		return this;
+	}
+	
 	//Get list items
-	var tmp = request({path: req + "/items"});
+	tmp = request({path: req + "/items"});
 	if (tmp && tmp.results) {
-		obj.items = tmp.results;
+		list.items = tmp.results;
 	} else {
-		obj.items = [];
+		list.items = [];
 	}
 
-	$.extend(this, obj);
+	$.extend(this, list);
 
 	return this;
 }
