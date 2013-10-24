@@ -232,6 +232,42 @@ $.ssp.List.prototype.removeList = function() {
 }
 
 $.ssp.Group = function(opts, create) {
+	var group,
+		res,
+		path;
+	
+	if (typeof opts === "string") {
+		opts = {title: opts};
+	}
+	
+	if (opts.title) {
+		path = "/SiteGroups/GetByTitle('" + opts.title +"')";
+	} else if (opts.uuid) {
+		path = "/SiteGroups/GetById('" + opts.uuid +"')";
+	} else {
+		return this;
+	}
+	
+	res = request({path: path});
+	
+	if (create && res.error && opts.title) {
+		path = "/SiteGroups"
+		group = {
+			__metadata: {
+				type: "SP.Group"
+			},
+			Title: opts.title,
+			Description: opts.desc || ""
+		};
+		
+		res = request({
+			type: "POST",
+			path: path,
+			data: group
+		});
+		
+		$.extend(this, res);
+	}	
 	
 	return this;	
 }
