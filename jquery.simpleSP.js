@@ -237,27 +237,27 @@ $.ssp.Group = function(opts, create) {
 		path;
 	
 	if (typeof opts === "string") {
-		opts = {title: opts};
+		opts = {Title: opts};
 	}
 	
-	if (opts.title) {
+	if (opts.Title) {
 		path = "/SiteGroups/GetByTitle('" + opts.title +"')";
-	} else if (opts.uuid) {
-		path = "/SiteGroups/GetById('" + opts.uuid +"')";
+	} else if (opts.Id) {
+		path = "/SiteGroups/GetById('" + opts.Id +"')";
 	} else {
 		return this;
 	}
 	
 	res = request({path: path});
 	
-	if (create && res.error && opts.title) {
+	if (create && res.error && opts.Title) {
 		path = "/SiteGroups"
 		group = {
 			__metadata: {
 				type: "SP.Group"
 			},
-			Title: opts.title,
-			Description: opts.desc || ""
+			Title: opts.Title,
+			Description: opts.Description || ""
 		};
 		
 		res = request({
@@ -273,11 +273,35 @@ $.ssp.Group = function(opts, create) {
 }
 
 $.ssp.Group.prototype.add = function(user) {
-
+		var desc,
+			res = {};
+		
+		desc ={
+			__metadata: {
+				type: "SP.User"
+			},
+			Email: user.Description,
+			Title: user.DisplayText,
+			LoginName: user.Key	
+		};
+		
+		res = request({
+			type: "POST",
+			path: "/SiteGroups("+ this.Id +")/Users"
+		});
+		
+		return res;
 }
 
 $.ssp.Group.prototype.rm = function(user) {
+	var res;
+	res = request({
+		type: "DELETE",
+		path: "/SiteGroups("+this.Id+")/Users/GetById("+ user.Id +")",
+		success: log
+		});
 
+	return res;
 }
 
 $.ssp.Role = function(opts, create) {
