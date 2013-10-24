@@ -226,6 +226,28 @@ $.ssp.List.prototype.rm = function(item) {
 }
 
 $.ssp.List.prototype.grant = function(group, role) {
+	var ctx = new SP.ClientContext(site.baseURL),
+	    web = ctx.get_web(),
+	    roleDef = ctx.get_site().get_rootWeb().get_roleDefinitions().getById(role.Id),
+	    grp = web.get_siteGroups().getById(group.Id),
+	    newBindings = SP.RoleDefinitionBindingCollection.newObject(ctx),
+	    target = web.get_lists().getById(list.Id),
+	    roleAssignments;
+			
+	// Add the role to the collection.
+	newBindings.add(roleDef);
+	// Get the list to work with and break permissions 
+	// so its permissions can be managed directly.
+	target.breakRoleInheritance(true, false);
+	// Get the RoleAssignmentCollection for the target list.
+	roleAssignments = target.get_roleAssignments();
+	// Add the user to the target list and assign the use 
+	// to the new RoleDefinitionBindingCollection.
+	roleAssignments.add(grp, newBindings);
+	ctx.executeQueryAsync(
+		function() {console.log("Succeed") },
+		function() {console.log("Failed")}
+	);
 }
 
 $.ssp.List.prototype.removeList = function() {
