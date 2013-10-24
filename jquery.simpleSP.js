@@ -58,7 +58,50 @@ $.ssp.List = function (title, uuid) {
 $.ssp.List.prototype.setTitle = function(title) {
 }
 
-$.ssp.List.prototype.addColumn = function(colDesc) {
+$.ssp.List.prototype.addColumn = function(col) {
+	var list = this,
+	    colDesc,
+	    status;
+
+	if (!list.uuid) {
+		return;
+	}
+
+	if (!col.type) {
+		type = 'Text';
+	}
+		
+	// SharePoint expects the type value as a number.
+	if (type === "Integer") {
+		type = 1;
+	} else if (type === "Text") {
+		type = 2;
+	} else if (type === "Boolean") {
+		type = 8;
+	} else if (type === "Guid") {
+		type = 14;
+	} else {
+		//Invalid
+		type = 0;
+	}
+		
+	colDesc = {
+		__metadata: {
+			type: "SP.Field"
+		},
+		Title: name,
+		FieldTypeKind: type,
+		// Use 'false' as default to avoid 
+		// sending null or undef
+		Required: required || false,
+		EnforceUniqueValues: unique || false
+	};
+		
+	status = request({
+		type: "POST",
+	    	path: "/List('" + list.uuid "')/Fields",
+	    	data: colDesc
+		});	
 }
 
 $.ssp.List.prototype.add = function(item) {
@@ -87,8 +130,15 @@ function request(desc) {
 			
 	};
 
-	if (desc.type && desc.type !== "GET") {
-		opts.headers['X-RequestDigest'] = $("#__REQUESTDIGEST").val();
+	if (desc.type !== "GET") {
+		opts.headers["X-RequestDigest"] = $("#__REQUESTDIGEST").val();
+		// This is forcing the write, must fix
+		// Maybe have the eTag with the rest of the data
+		opts.headers["If-Match"] = "*";
+	}
+
+	if (dest.data && desc.type !== "GET") {
+		dest.data = JSON.stringify(dest.data);
 	}
  
 	$.ajax({
@@ -96,14 +146,13 @@ function request(desc) {
 		url: site + "/_api/web" + opts.path,
 		headers: opts.headers, 
 		async: false,
-		data: opts.data,
+		data: dest.data, 
 		success: function(res) {
 			ret = res.d;
 		}
 	});
 	
 	return ret;			
-
 }
 
 })(jQuery);
