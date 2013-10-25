@@ -142,9 +142,6 @@ $.ssp.List.prototype.updateItems = function() {
 	return this;
 }
 
-$.ssp.List.prototype.setTitle = function(title) {
-}
-
 $.ssp.List.prototype.addColumn = function(col) {
 	var list = this,
 	    colDesc,
