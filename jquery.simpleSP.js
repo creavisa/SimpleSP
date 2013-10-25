@@ -140,7 +140,7 @@ $.ssp.List.prototype.updateItems = function() {
 	}
 
 	for (i in list.Items) {
-	if (list.Items.hasOwnProperty(i) {
+	if (list.Items.hasOwnProperty(i)){
 		list.Items[i] = new $.ssp.List.Item(list.Items[i]);
 	}
 	}
@@ -187,7 +187,7 @@ $.ssp.List.prototype.addColumn = function(col) {
 		// Use 'false' as default to avoid 
 		// sending null or undef
 		Required: col.Required || false,
-		EnforceUniqueValues: col.Unique || Col.EnforceUniqueValues || false
+		EnforceUniqueValues: col.Unique || col.EnforceUniqueValues || false
 	};
 		
 	status = request({
@@ -253,7 +253,7 @@ $.ssp.List.prototype.grant = function(group, role) {
 	    roleDef = ctx.get_site().get_rootWeb().get_roleDefinitions().getById(role.Id),
 	    grp = web.get_siteGroups().getById(group.Id),
 	    newBindings = SP.RoleDefinitionBindingCollection.newObject(ctx),
-	    target = web.get_lists().getById(list.Id),
+	    target = web.get_lists().getById(this.Id),
 	    roleAssignments;
 			
 	// Add the role to the collection.
@@ -374,12 +374,12 @@ $.ssp.Group.prototype.rm = function(user) {
 	return request({
 		type: "DELETE",
 		path: "/SiteGroups("+this.Id+")/Users/GetById("+ user.Id +")",
-		success: log
 		});
 }
 
 $.ssp.Role = function(opts, create) {
 	var res,
+	    path,
 	    role = {}
 		
 		
