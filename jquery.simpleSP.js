@@ -483,8 +483,8 @@ function request(desc) {
 		type: opts.type,
 		url: opts.site + "/_api/Web" + opts.path,
 		headers: opts.headers, 
-		async: desc.async,
-		data: desc.data, 
+		async: opts.async,
+		data: opts.data, 
 		success: function(res) {
 			ret = res.d;
 		},
