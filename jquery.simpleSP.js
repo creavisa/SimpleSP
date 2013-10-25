@@ -7,12 +7,14 @@
 (function ($) {
 
 var  site = {
-	baseURL: ""
+	baseUrl: ""
 };
 
 $.ssp = function(options) {
 	site = new $.ssp.Site({
-		url: options.url || window.location.host,
+		baseUrl: options.url || 
+		     window._spPageContextInfo.siteAbsoluteUrl ||
+		     "",
 		load: options.load || false
 	});
 
@@ -21,12 +23,12 @@ $.ssp = function(options) {
 
 $.ssp.Site = function(opts, create) {
 	var info = {},
-		desc = {},
-		// English
-		lang = 1033;
+	    desc = {},
+	    // English
+	    lang = 1033;
 	
 	if (opts.load || create) {
-		info = request({site: opts.url});
+		info = request({site: opts.baseUrl});
 		$.extend(this, info);
 	} 
 	
@@ -36,7 +38,7 @@ $.ssp.Site = function(opts, create) {
 			__metadata:  {
 				type: "SP.WebInfoCreationInformation" 
 			}, 
-			Url: opts.Url, 
+			Url: opts.Url || opts.baseUrl, 
 			Title: opts.Title, 
 			Description: opts.Description,
 			Language: lang,
@@ -52,7 +54,7 @@ $.ssp.Site = function(opts, create) {
 		
 	}
 
-	this.baseURL = opts.url;
+	this.baseUrl = opts.baseUrl || opts.url;
 
 	return this;
 }
@@ -71,7 +73,6 @@ $.ssp.getLists = function() {
 // List object definition
 $.ssp.List = function (opts, create) {
 	var list,
-	    tmp,
 	    desc, //List description
 	    req = '/Lists';
 		
@@ -128,7 +129,7 @@ $.ssp.List.prototype.updateItems = function() {
 		
 	//Get list items
 	tmp = request({
-		path: req + "/Lists('" + list.Id +"')/Items",
+		path: "/Lists('" + list.Id +"')/Items",
 		async: true
 		});
 	
@@ -247,7 +248,7 @@ $.ssp.List.prototype.rm = function(item) {
 }
 
 $.ssp.List.prototype.grant = function(group, role) {
-	var ctx = new SP.ClientContext(site.baseURL),
+	var ctx = new SP.ClientContext(site.baseUrl),
 	    web = ctx.get_web(),
 	    roleDef = ctx.get_site().get_rootWeb().get_roleDefinitions().getById(role.Id),
 	    grp = web.get_siteGroups().getById(group.Id),
@@ -309,8 +310,8 @@ $.ssp.List.Item.prototype.update = function(changes) {
 
 $.ssp.Group = function(opts, create) {
 	var group,
-		res,
-		path;
+	    res,
+	    path;
 	
 	if (typeof opts === "string") {
 		opts = {Title: opts};
@@ -456,7 +457,7 @@ function request(desc) {
 	var ret,
 	    opts = {
 		path: desc.path || "",
-		site: desc.site || site.baseURL,
+		site: desc.site || site.baseUrl,
 		type: desc.type || "GET",
 		data: desc.data || "",
 		async: desc.async || false,
