@@ -123,6 +123,7 @@ $.ssp.List = function (opts, create) {
 
 $.ssp.List.prototype.updateItems = function() {
 	var tmp,
+	    i = 0,
 	    list = this;
 		
 	//Get list items
@@ -137,6 +138,12 @@ $.ssp.List.prototype.updateItems = function() {
 		list.Items = [];
 	}
 
+	for (i in list.Items) {
+	if (list.Items.hasOwnProperty(i) {
+		list.Items[i] = new $.ssp.List.Item(list.Items[i]);
+	}
+	}
+
 	$.extend(this, list);
 
 	return this;
@@ -145,7 +152,7 @@ $.ssp.List.prototype.updateItems = function() {
 $.ssp.List.prototype.addColumn = function(col) {
 	var list = this,
 	    colDesc,
-		type,
+	    type,
 	    status;
 
 	if (!list.Id) {
@@ -278,6 +285,26 @@ $.ssp.List.prototype.removeList = function() {
 	});
 
 	return status;
+}
+
+$.ssp.List.Item = function(desc) {
+	$.extend(this, desc);
+
+	return this;
+}
+
+$.ssp.List.Item.prototype.update = function(changes) {
+	var res;
+
+	$.extend(this, changes);
+
+	res = request({
+		type: "POST",
+		path: "/Lists("+ this.ListId +")/Item/update("+ this.Id +")",
+		data: this
+	});
+
+	return res;
 }
 
 $.ssp.Group = function(opts, create) {
