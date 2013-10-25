@@ -122,7 +122,7 @@ $.ssp.List = function (opts, create) {
 	return this;
 }
 
-$.ssp.List.prototype.updateItems = function() {
+$.ssp.List.prototype.updateItems = function(async) {
 	var tmp,
 	    i = 0,
 	    list = this;
@@ -130,7 +130,7 @@ $.ssp.List.prototype.updateItems = function() {
 	//Get list items
 	tmp = request({
 		path: "/Lists('" + list.Id +"')/Items",
-		async: true
+		async: async
 		});
 	
 	if (tmp && tmp.results) {
