@@ -323,7 +323,7 @@ $.ssp.Group = function(opts, create) {
 	}
 	
 	if (opts.Title) {
-		path = "/SiteGroups/GetByTitle('" + opts.title +"')";
+		path = "/SiteGroups/GetByName('" + opts.Title +"')";
 	} else if (opts.Id) {
 		path = "/SiteGroups/GetById('" + opts.Id +"')";
 	} else {
@@ -347,9 +347,9 @@ $.ssp.Group = function(opts, create) {
 			path: path,
 			data: group
 		});
-		
-		$.extend(this, res);
 	}	
+
+	$.extend(this, res);
 	
 	return this;	
 }
