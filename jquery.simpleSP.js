@@ -472,21 +472,33 @@ function request(desc) {
 		}
 			
 	};
+	
+	opts.path = "/_api/Web" + opts.path;
 
 	if (opts.type !== "GET") {
 		opts.headers["X-RequestDigest"] = $("#__REQUESTDIGEST").val();
 		// This is forcing the write, must fix
 		// Maybe have the eTag with the rest of the data
-		opts.headers["If-Match"] = "*";
+		opts.headers["If-Match"] = opts.etag || "*";
 	}
 
 	if (opts.data && opts.type !== "GET") {
-		desc.data = JSON.stringify(desc.data);
+		opts.data = JSON.stringify(opts.data);
+	} 
+	
+	if (opts.type === "MERGE") {
+		opts.headers["X-HTTP-Method"] = "MERGE";
+		opts.type = "POST";
+	}
+	
+	if (desc.uri) {
+		opts.site = desc.uri;
+		opts.path = "";
 	}
  
 	$.ajax({
 		type: opts.type,
-		url: opts.site + "/_api/Web" + opts.path,
+		url: opts.site + opts.path,
 		headers: opts.headers, 
 		async: opts.async,
 		data: opts.data, 
