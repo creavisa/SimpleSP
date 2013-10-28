@@ -393,7 +393,7 @@ $.ssp.Role = function(opts, create) {
 	}
 	
 	if (opts.Name) {
-		path = "/RoleDefinitions/GetByTitle('" + opts.Name +"')";
+		path = "/RoleDefinitions/GetByName('" + opts.Name +"')";
 	} else if (opts.uuid) {
 		path = "/RoleDefinitions/GetById('" + opts.uuid +"')";
 	} else {
