@@ -27,10 +27,15 @@ $.ssp.Site = function(opts, create) {
 	    // English
 	    lang = 1033;
 	
-	if (opts.load || create) {
+	if (opts.load) {
 		info = request({site: opts.baseUrl});
 		$.extend(this, info);
-	} 
+	} else if (create) {
+		info = request({
+			site: opts.baseUrl,
+			path: opts.path || '/'
+		});
+	}
 	
 	if (create && info.error) {
 		desc = {
