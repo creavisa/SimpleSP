@@ -81,6 +81,8 @@ $.ssp.List = function (opts, create) {
 	    desc, //List description
 	    req = '/Lists';
 		
+	this.site = opts.site || site.baseUrl;
+		
 	if (typeof opts === "string") {
 		opts = {
 			Title: opts
@@ -93,7 +95,11 @@ $.ssp.List = function (opts, create) {
 		req += "/GetByTitle('" + opts.Title +"')";
 	}
 
-	list = request({path: req});
+	list = request({
+		path: req,
+		site: this.site
+	});
+	
 	if (list.error && create && opts.Title) {
 		desc = {
 			__metadata: {
@@ -109,7 +115,8 @@ $.ssp.List = function (opts, create) {
 		list = request({
 			type: "POST",
 			path: "/Lists",
-			data: desc
+			data: desc,
+			site: this.site
 			});
 	} 
 	
@@ -135,7 +142,8 @@ $.ssp.List.prototype.updateItems = function(async) {
 	//Get list items
 	tmp = request({
 		path: "/Lists('" + list.Id +"')/Items",
-		async: async
+		async: async,
+		site: this.site
 		});
 	
 	if (tmp && tmp.results) {
@@ -198,7 +206,8 @@ $.ssp.List.prototype.addColumn = function(col) {
 	status = request({
 		type: "POST",
 		data: colDesc,
-		path: "/List('" + list.Id + "')/Fields"
+		path: "/List('" + list.Id + "')/Fields",
+		site: this.site
 		});	
 }
 
@@ -228,7 +237,8 @@ $.ssp.List.prototype.add = function(item) {
 	status = request({
 		type: "POST",
 		path:  "/Lists('"+ list.Id +"')/Items",
-		data: desc
+		data: desc,
+		site: this.site
 	});
 
 	this.updateItems();
@@ -245,7 +255,8 @@ $.ssp.List.prototype.rm = function(item) {
 
 	status = request({
 		type: "DELETE",
-		path: "/List('"+ list.Id +"')/Items('" + item.Id + "')"
+		path: "/List('"+ list.Id +"')/Items('" + item.Id + "')",
+		site: this.site
 	});
 
 	this.updateItems();
@@ -253,27 +264,27 @@ $.ssp.List.prototype.rm = function(item) {
 }
 
 $.ssp.List.prototype.grant = function(group, role) {
-	var ctx = new SP.ClientContext(site.baseUrl),
+	var ctx = new SP.ClientContext(this.site),
 	    web = ctx.get_web(),
-	    roleDef = ctx.get_site().get_rootWeb().get_roleDefinitions().getById(role.Id),
-	    grp = web.get_siteGroups().getById(group.Id),
-	    newBindings = SP.RoleDefinitionBindingCollection.newObject(ctx),
-	    target = web.get_lists().getById(this.Id),
-	    roleAssignments;
+	    target = web.get_lists().getById(this.Id);
 			
-	// Add the role to the collection.
-	newBindings.add(roleDef);
-	// Get the list to work with and break permissions 
-	// so its permissions can be managed directly.
-	target.breakRoleInheritance(true, false);
-	// Get the RoleAssignmentCollection for the target list.
-	roleAssignments = target.get_roleAssignments();
-	// Add the user to the target list and assign the use 
-	// to the new RoleDefinitionBindingCollection.
-	roleAssignments.add(grp, newBindings);
+	// The 'false' means that it shouldn't copy it's role
+	// Assignment from it's parent.
+	target.breakRoleInheritance(false);
+
+	var roleDef, grp, bindings, assignments;
+	
+	roleDef = ctx.get_site().get_rootWeb().get_roleDefinitions().getById(role.Id);
+	grp = web.get_siteGroups().getById(group.Id);
+	bindings = SP.RoleDefinitionBindingCollection.newObject(ctx);
+	assignments = target.get_roleAssignments();
+			
+	bindings.add(roleDef);
+	assignments.add(grp, bindings);
+		
 	ctx.executeQueryAsync(
-		function() {console.log("Succeed") },
-		function() {console.log("Failed")}
+		function() {console.log("Role assigments set")},
+		function() {console.error("failed setting list assignments")}
 	);
 }
 
@@ -287,13 +298,15 @@ $.ssp.List.prototype.removeList = function() {
 
 	status = request({
 		type: "DELETE",
-		path: "/List('"+ list.Id +"')"
+		path: "/List('"+ list.Id +"')",
+		site: this.site
 	});
 
 	return status;
 }
 
 $.ssp.List.Item = function(desc) {
+	this.site = desc.site || site.baseUrl;
 	$.extend(this, desc);
 
 	return this;
@@ -307,7 +320,8 @@ $.ssp.List.Item.prototype.update = function(changes) {
 	res = request({
 		type: "POST",
 		path: "/Lists("+ this.ListId +")/Item/update("+ this.Id +")",
-		data: this
+		data: this,
+		site: this.site
 	});
 
 	return res;
@@ -317,6 +331,8 @@ $.ssp.Group = function(opts, create) {
 	var group,
 	    res,
 	    path;
+	
+	this.site = opts.site || site.baseUrl;
 	
 	if (typeof opts === "string") {
 		opts = {Title: opts};
@@ -330,7 +346,10 @@ $.ssp.Group = function(opts, create) {
 		return this;
 	}
 	
-	res = request({path: path});
+	res = request({
+		site: this.site,
+		path: path
+	});
 	
 	if (create && res.error && opts.Title) {
 		path = "/SiteGroups"
@@ -345,6 +364,7 @@ $.ssp.Group = function(opts, create) {
 		res = request({
 			type: "POST",
 			path: path,
+			site: this.site,
 			data: group
 		});
 	}	
@@ -369,7 +389,8 @@ $.ssp.Group.prototype.add = function(user) {
 
 	res = request({
 		type: "POST",
-		path: "/SiteGroups("+ this.Id +")/Users"
+		path: "/SiteGroups("+ this.Id +")/Users",
+		site: this.site
 	});
 	
 	return res;
@@ -379,6 +400,7 @@ $.ssp.Group.prototype.rm = function(user) {
 	return request({
 		type: "DELETE",
 		path: "/SiteGroups("+this.Id+")/Users/GetById("+ user.Id +")",
+		site: this.site
 		});
 }
 
@@ -386,7 +408,8 @@ $.ssp.Role = function(opts, create) {
 	var res,
 	    path,
 	    role = {}
-		
+	
+	this.site = opts.site || site.baseUrl;
 		
 	if (typeof opts === "string") {
 		opts = {Name: opts};
@@ -400,7 +423,10 @@ $.ssp.Role = function(opts, create) {
 		return this;
 	}
 	
-	res = request({path: path});
+	res = request({
+		site: this.site,
+		path: path
+	});
 	
 	if (create && res.error && opts.Name) {
 		role = {
@@ -416,6 +442,7 @@ $.ssp.Role = function(opts, create) {
 		
 		res = request({
 			type: "POST",
+			site: this.site,
 			path: "/RoleDefinitions",
 			data: role
 		});
