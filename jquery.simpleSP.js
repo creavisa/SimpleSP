@@ -275,11 +275,13 @@ $.ssp.List.prototype.grant = function(group, role) {
 	var roleDef, grp, bindings, assignments;
 	
 	roleDef = ctx.get_site().get_rootWeb().get_roleDefinitions().getById(role.Id);
-	grp = web.get_siteGroups().getById(group.Id);
+	
 	bindings = SP.RoleDefinitionBindingCollection.newObject(ctx);
 	assignments = target.get_roleAssignments();
-			
 	bindings.add(roleDef);
+	
+	grp = web.get_siteGroups().getById(group.Id);
+	
 	assignments.add(grp, bindings);
 		
 	ctx.executeQueryAsync(
