@@ -64,6 +64,33 @@ $.ssp.Site = function(opts, create) {
 	return this;
 }
 
+$.ssp.Site.prototype.setNavigation = function(style, terms) {
+	var ctx = new SP.ClientContext(site.baseUrl),
+	    web = ctx.get_web(),
+		navSettings = new SP.Publishing.Navigation.WebNavigationSettings(ctx, web),
+		nav;
+		
+	if (style === "global" && terms) {
+		nav = navSettings.get_globalNavigation();
+		nav.set_termStoreId(terms.store);
+		nav.set_termSetId(terms.set);
+		nav.set_source(2);
+	} else if (style === "quick" && terms) {
+		nav = navSettings.get_currentNavigation();
+		nav.set_termStoreId(terms.store);
+		nav.set_termSetId(terms.set);
+		nav.set_source(2)
+	} else if (style === "inherit") {
+		nav.set_source(3);
+	} else {
+		nav.set_source(1);
+	}
+	
+	navSettings.update();
+	
+	ctx.executeQueryAsync();
+}
+
 $.ssp.getLists = function() {
 	var res;
 	res = request({
