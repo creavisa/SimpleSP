@@ -33,7 +33,7 @@ $.ssp.Site = function(opts, create) {
 	} else if (create) {
 		info = request({
 			site: opts.baseUrl,
-			path: opts.path || '/'
+			path: opts.path || "/"
 		});
 	}
 	
@@ -66,7 +66,9 @@ $.ssp.Site = function(opts, create) {
 
 $.ssp.getLists = function() {
 	var res;
-	res = request({path: '/Lists'});
+	res = request({
+		path: "/Lists"
+		});
 	
 	if (res.error) {
 		return [];
@@ -79,7 +81,7 @@ $.ssp.getLists = function() {
 $.ssp.List = function (opts, create) {
 	var list,
 	    desc, //List description
-	    req = '/Lists';
+	    req = "/Lists";
 		
 	this.site = opts.site || site.baseUrl;
 		
@@ -174,7 +176,7 @@ $.ssp.List.prototype.addColumn = function(col) {
 	}
 
 	if (!col.type) {
-		type = 'Text';
+		type = "Text";
 	}
 		
 	// SharePoint expects the type value as a number.
