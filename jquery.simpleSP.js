@@ -107,6 +107,7 @@ $.ssp.getLists = function() {
 // List object definition
 $.ssp.List = function (opts, create) {
 	var list,
+		c,
 	    desc, //List description
 	    req = "/Lists";
 		
@@ -147,6 +148,14 @@ $.ssp.List = function (opts, create) {
 			data: desc,
 			site: this.site
 			});
+			
+		if (!list.error && opts.cols) {
+			for (c in opts.cols) {
+			if (opts.cols.hasOwnProperty(c)) {
+				this.addColumn(opts.cols[c]);
+			}
+			}
+		}
 	} 
 	
 	// If it doesn't have a title of the error
@@ -207,13 +216,13 @@ $.ssp.List.prototype.addColumn = function(col) {
 	}
 		
 	// SharePoint expects the type value as a number.
-	if (type === "Integer") {
+	if (col.type === "Integer") {
 		type = 1;
-	} else if (type === "Text") {
+	} else if (col.type === "Text") {
 		type = 2;
-	} else if (type === "Boolean") {
+	} else if (col.type === "Boolean") {
 		type = 8;
-	} else if (type === "Guid") {
+	} else if (col.type === "Guid") {
 		type = 14;
 	} else {
 		//Invalid
@@ -336,23 +345,37 @@ $.ssp.List.prototype.removeList = function() {
 	return status;
 }
 
+$.ssp.List.prototype.getByTitle= function (title) {
+	return new $.ssp.List.Item({Value: "None"});
+}
+
 $.ssp.List.Item = function(desc) {
+	var res;
 	this.site = desc.site || site.baseUrl;
-	$.extend(this, desc);
+	
+	res = request({
+		path: "/Lists"
+	});
+	
+	if (!res.error) {
+		$.extend(this, res);
+	}
 
 	return this;
 }
 
 $.ssp.List.Item.prototype.update = function(changes) {
-	var res;
+	var res, info = {
+		__metadata: this.__metadata
+	};
 
-	$.extend(this, changes);
-
-	res = request({
-		type: "POST",
-		path: "/Lists("+ this.ListId +")/Item/update("+ this.Id +")",
-		data: this,
-		site: this.site
+	$.extend(changes, info);
+	
+	res = $.ssp.req({
+		type: "MERGE",
+		etag: this.__metadata.etag,
+		uri: this.__metadata.uri,
+		data: changes
 	});
 
 	return res;
