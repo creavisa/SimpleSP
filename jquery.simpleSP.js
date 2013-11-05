@@ -6,9 +6,10 @@
 // Closure to avoid unnecesary globals
 (function ($) {
 
-var  site = {
-	baseUrl: ""
-};
+var context = {},
+    site = {
+	  baseUrl: ""
+    };
 
 $.ssp = function(options) {
 	site = new $.ssp.Site({
@@ -189,7 +190,8 @@ $.ssp.List.prototype.updateItems = function(async) {
 	} else {
 		list.Items = [];
 	}
-
+	
+	context.list = {Id: list.Id };
 	for (i in list.Items) {
 	if (list.Items.hasOwnProperty(i)){
 		list.Items[i] = new $.ssp.List.Item(list.Items[i]);
@@ -266,9 +268,10 @@ $.ssp.List.prototype.add = function(item) {
 	desc = {
 		"__metadata": {
 			type: item.type
-		},
-		Title: item.Title
+		}
 	};
+
+	$.extend(desc, item);
 
 	// Find a way to list the extra columns per item.type
 	// and fill them, if the item has them declared
@@ -345,8 +348,25 @@ $.ssp.List.prototype.removeList = function() {
 	return status;
 }
 
-$.ssp.List.prototype.getByTitle= function (title) {
-	return new $.ssp.List.Item({Value: "None"});
+$.ssp.List.prototype.getBy = function (field, value) {
+	var path,
+	    res;
+		
+	path = "/List('"+ this.Id +"')/Items";
+	path += "?$filter="+ field +" eq '"+ value +"'";
+	
+	res = request({
+		path: path,
+		site: this.site
+	});
+	
+	if (res.error) {
+		return res;
+	}else if (res.results) {
+		return res.results;
+	} else {
+		return;
+	}
 }
 
 $.ssp.List.Item = function(desc) {
@@ -354,7 +374,7 @@ $.ssp.List.Item = function(desc) {
 	this.site = desc.site || site.baseUrl;
 	
 	res = request({
-		path: "/Lists"
+		path: "/Lists('"+ context.list.Id +"')/Items('"+ desc.Id +"')"
 	});
 	
 	if (!res.error) {
