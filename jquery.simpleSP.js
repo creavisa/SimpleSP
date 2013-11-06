@@ -556,6 +556,29 @@ $.ssp.getSubSites = function() {
 	return sites.results;
 }
 
+// Render and initialize the client-side People Picker.
+$.ssp.peoplePicker = function(ElementId, users) {
+	// Create a schema to store picker properties, and set the properties.
+	var schema = {
+		PrincipalAccountType: "User",
+		SearchPrincipalSource: 15,
+		ResolvePrincipalSource: 15,
+		AllowMultipleValues: true,
+		MaximumEntitySuggestions: 50,
+		width: "280px"
+	};
+
+	if (!users) {
+		users = [];
+	}
+
+	// Render and initialize the picker. 
+	// Pass the ID of the DOM element that contains the picker, an array of initial
+	// PickerEntity objects to set the picker value, and a schema that defines
+	// picker properties.
+	window.SPClientPeoplePicker_InitStandaloneControlWrapper(ElementId, users, schema);
+}
+
 // Automate somethings about the request and make it 
 // synchronous to avoid race conditions when creating sites
 // or lists.
