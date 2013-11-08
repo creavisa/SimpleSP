@@ -304,7 +304,7 @@ $.ssp.List.prototype.rm = function(item) {
 	return status;
 }
 
-$.ssp.List.prototype.grant = function(group, role) {
+$.ssp.List.prototype.grant = function(entity, role) {
 	var ctx = new SP.ClientContext(this.site),
 	    web = ctx.get_web(),
 	    target = web.get_lists().getById(this.Id);
@@ -321,7 +321,11 @@ $.ssp.List.prototype.grant = function(group, role) {
 	assignments = target.get_roleAssignments();
 	bindings.add(roleDef);
 	
-	grp = web.get_siteGroups().getById(group.Id);
+	if (entity.EntityType == "User") {
+		grp = web.get_siteUsers().getByEmail(entity.Description);
+	} else {
+		grp = web.get_siteGroups().getById(entity.Id);
+	}
 	
 	assignments.add(grp, bindings);
 		
@@ -565,7 +569,7 @@ $.ssp.peoplePicker = function(ElementId, users) {
 		ResolvePrincipalSource: 15,
 		AllowMultipleValues: true,
 		MaximumEntitySuggestions: 50,
-		width: "280px"
+		width: "200px"
 	};
 
 	if (!users) {
