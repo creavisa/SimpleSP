@@ -65,29 +65,54 @@ $.ssp.Site = function(opts, create) {
 	return this;
 }
 
-$.ssp.Site.prototype.setNavigation = function(style, terms) {
+$.ssp.Site.prototype.setGlobalNavigation = function(style, terms) {
 	var ctx = new SP.ClientContext(site.baseUrl),
 	    web = ctx.get_web(),
 		navSettings = new SP.Publishing.Navigation.WebNavigationSettings(ctx, web),
-		nav;
-		
-	if (style === "global" && terms) {
 		nav = navSettings.get_globalNavigation();
-		nav.set_termStoreId(terms.store);
-		nav.set_termSetId(terms.set);
+	
+	/*
+	 * unknown: 0, 
+	 * portalProvider: 1 (Structural Navigation), 
+	 * taxonomyProvider: 2 (You will need the Term Store Id and Term Set Id too),
+	 * inheritFromParentWeb: 3 
+	 */
+	if (style === "taxonomy" && terms) {
+		nav.set_termStoreId(terms.storeId);
+		nav.set_termSetId(terms.setId)
 		nav.set_source(2);
-	} else if (style === "quick" && terms) {
-		nav = navSettings.get_currentNavigation();
-		nav.set_termStoreId(terms.store);
-		nav.set_termSetId(terms.set);
-		nav.set_source(2)
-	} else if (style === "inherit") {
-		nav.set_source(3);
-	} else {
+	} else if (style === "provider") {
 		nav.set_source(1);
+	} else {
+		//Inherit
+		nav.set_source(3);
 	}
 	
 	navSettings.update();
+	nav.update();
+	
+	ctx.executeQueryAsync();
+}
+
+$.ssp.Site.prototype.setQuickNavigation = function(style, terms) {
+	var ctx = new SP.ClientContext(site.baseUrl),
+	    web = ctx.get_web(),
+		navSettings = new SP.Publishing.Navigation.WebNavigationSettings(ctx, web),
+		nav = navSettings.get_currentNavigation();
+		
+	if (style === "taxonomy" && terms) {
+		nav.set_termStoreId(terms.storeId);
+		nav.set_termSetId(terms.setId);
+		nav.set_source(2);
+	} else if (style === "provider") {
+		nav.set_source(1);
+	} else {
+		//Inherit
+		nav.set_source(3);
+	}
+	
+	navSettings.update();
+	nav.update();
 	
 	ctx.executeQueryAsync();
 }
@@ -194,6 +219,7 @@ $.ssp.List.prototype.updateItems = function(async) {
 	context.list = {Id: list.Id };
 	for (i in list.Items) {
 	if (list.Items.hasOwnProperty(i)){
+		list.Items[i].site = list.site;
 		list.Items[i] = new $.ssp.List.Item(list.Items[i]);
 	}
 	}
@@ -246,7 +272,7 @@ $.ssp.List.prototype.addColumn = function(col) {
 	status = request({
 		type: "POST",
 		data: colDesc,
-		path: "/List('" + list.Id + "')/Fields",
+		path: "/Lists('" + list.Id + "')/Fields",
 		site: this.site
 		});	
 }
@@ -260,14 +286,9 @@ $.ssp.List.prototype.add = function(item) {
 		return;
 	}
 
-	if (!item.type) {
-		// get default type from list
-		item.type = list.ListItemEntityTypeFullName;
-	}
-
 	desc = {
 		"__metadata": {
-			type: item.type
+			type: list.ListItemEntityTypeFullName
 		}
 	};
 
@@ -345,7 +366,7 @@ $.ssp.List.prototype.removeList = function() {
 
 	status = request({
 		type: "DELETE",
-		path: "/List('"+ list.Id +"')",
+		path: "/Lists('"+ list.Id +"')",
 		site: this.site
 	});
 
@@ -378,7 +399,8 @@ $.ssp.List.Item = function(desc) {
 	this.site = desc.site || site.baseUrl;
 	
 	res = request({
-		path: "/Lists('"+ context.list.Id +"')/Items('"+ desc.Id +"')"
+		path: "/Lists('"+ context.list.Id +"')/Items('"+ desc.Id +"')",
+		site: this.site
 	});
 	
 	if (!res.error) {
