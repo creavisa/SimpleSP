@@ -89,7 +89,6 @@ $.ssp.Site.prototype.setGlobalNavigation = function(style, terms) {
 	}
 	
 	navSettings.update();
-	nav.update();
 	
 	ctx.executeQueryAsync();
 }
@@ -112,7 +111,6 @@ $.ssp.Site.prototype.setQuickNavigation = function(style, terms) {
 	}
 	
 	navSettings.update();
-	nav.update();
 	
 	ctx.executeQueryAsync();
 }
