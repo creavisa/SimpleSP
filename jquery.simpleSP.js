@@ -317,7 +317,7 @@ $.ssp.List.prototype.rm = function(item) {
 
 	status = request({
 		type: "DELETE",
-		path: "/List('"+ list.Id +"')/Items('" + item.Id + "')",
+		path: "/Lists('"+ list.Id +"')/Items('" + item.Id + "')",
 		site: this.site
 	});
 
@@ -375,9 +375,10 @@ $.ssp.List.prototype.removeList = function() {
 
 $.ssp.List.prototype.getBy = function (field, value) {
 	var path,
+	    i = 0,
 	    res;
 		
-	path = "/List('"+ this.Id +"')/Items";
+	path = "/Lists('"+ this.Id +"')/Items";
 	path += "?$filter="+ field +" eq '"+ value +"'";
 	
 	res = request({
@@ -388,6 +389,13 @@ $.ssp.List.prototype.getBy = function (field, value) {
 	if (res.error) {
 		return res;
 	}else if (res.results) {
+		for (i in res.results) {
+		if (res.results.hasOwnProperty(i)){
+			res.results[i].site = this.site;
+			res.results[i].list = this;
+			res.results[i] = new $.ssp.List.Item(res.results[i]);
+		}
+		}
 		return res.results;
 	} else {
 		return;
@@ -396,10 +404,11 @@ $.ssp.List.prototype.getBy = function (field, value) {
 
 $.ssp.List.Item = function(desc) {
 	var res;
-	this.site = desc.site || site.baseUrl;
+	this.site = desc.site || site.baseUl;
+	this.list = desc.list || context.list;
 	
 	res = request({
-		path: "/Lists('"+ context.list.Id +"')/Items('"+ desc.Id +"')",
+		path: "/Lists('"+ this.list.Id +"')/Items('"+ desc.Id +"')",
 		site: this.site
 	});
 	
@@ -421,7 +430,8 @@ $.ssp.List.Item.prototype.update = function(changes) {
 		type: "MERGE",
 		etag: this.__metadata.etag,
 		uri: this.__metadata.uri,
-		data: changes
+		data: changes,
+		site: this.site
 	});
 
 	return res;
