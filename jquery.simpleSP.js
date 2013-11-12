@@ -115,6 +115,31 @@ $.ssp.Site.prototype.setQuickNavigation = function(style, terms) {
 	ctx.executeQueryAsync();
 }
 
+$.ssp.Site.prototype.addNavItem = function(item, parentId) {
+	var payload = {
+			__metadata: {
+				type: "SP.NavigationNode"
+			},
+			Title: "",
+			Url: "/",
+			IsVisible: true,
+			IsExternal: false,
+			IsDocLib: false,
+	    },
+	    path = "/Navigation";
+	
+	if (parentId) {
+		path += "/GetNodeById(" + parentId +")/Children";
+	}
+	$.extend(payload, item);
+	
+	request({
+		path: path,
+		data: payload,
+		site: this.baseUrl
+		});
+}
+
 $.ssp.getLists = function() {
 	var res;
 	res = request({
